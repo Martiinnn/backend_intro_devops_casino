@@ -128,72 +128,24 @@ npm start
 
 ---
 
-## Cómo lo van a contenerizar (EP2)
+## Despliegue en AWS EKS (Kubernetes) - EA3
 
-El docente espera que ustedes:
+Este servicio ha sido desplegado exitosamente en **AWS EKS (Elastic Kubernetes Service)** como parte de la Experiencia de Aprendizaje 3.
 
-1. Construyan un **Dockerfile multi-stage** (`builder` con `npm ci`,
-   `runtime` `node:20-alpine` con usuario no root).
-2. Definan en el `docker-compose.yml` los servicios `db`, `backend`
-   (y agreguen el `frontend`) con:
-   - `pg_data` como **named volume** para `/var/lib/postgresql/data`.
-   - `./casino-backend/db/init.sql` montado en `/docker-entrypoint-initdb.d/`
-     (recuerden: solo se ejecuta si el volumen está vacío).
-   - `depends_on` con `condition: service_healthy` y un `healthcheck`
-     en `db` (`pg_isready`).
-   - Variables de entorno **inyectadas por compose**, sin hard-codear.
-3. Configuren workflows en `.github/workflows/` que hagan
-   `build → push (ECR) → deploy` en EC2 al hacer push a la rama
-   correspondiente (en el **Ejercicio 2.5** se usa `main`; en la
-   **EP2** la pauta oficial pide la rama `deploy`).
+### Arquitectura de Despliegue
 
-Lean la pauta oficial (`EP2_Instrucciones y Pauta_Encargo_Estudiante.pdf`)
-para los criterios completos.
+1. **Docker**: Contenerizado mediante un `Dockerfile` multi-stage.
+2. **Registro de Contenedores**: Imagen alojada en **Amazon ECR**.
+3. **Base de Datos**: PostgreSQL desplegado dentro del cluster EKS.
+4. **CI/CD**: Integración y despliegue continuo configurado con **GitHub Actions** (`.github/workflows/deploy.yml`).
+5. **Kubernetes**: 
+   - Manifiestos de `Deployment` y `Service` (tipo ClusterIP).
+   - Escalado automático configurado mediante `HorizontalPodAutoscaler` (HPA).
+   - Validado mediante pruebas de carga con Locust.
 
 ---
 
 ## Repositorio del frontend
 
-[`casino-frontend`](../casino-frontend)
+[`casino-frontend`](../frontend_intro_devops_casino)
 
----
-
-## CI/CD (GitHub Actions) - Rama `deploy`
-
-Este repositorio incluye el workflow:
-
-- `.github/workflows/deploy.yml`
-
-Se ejecuta automaticamente con `push` a la rama `deploy` y sigue 3 etapas:
-
-1. Build de imagen Docker.
-2. Push al registry (Docker Hub).
-3. Deploy automatico en EC2 por SSH.
-
-### Tags de version en cada build
-
-Cada ejecucion publica simultaneamente:
-
-- `vX.Y.Z` (version tomada desde `package.json`)
-- `latest`
-- `${{ github.sha }}`
-
-### Secrets requeridos
-
-Configurar en `Settings > Secrets and variables > Actions`:
-
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-- `EC2_BACKEND_HOST`
-- `EC2_BACKEND_USER`
-- `EC2_BACKEND_SSH_KEY`
-- `DB_HOST`
-- `DB_PORT`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
-- `JWT_SECRET`
-- `JWT_EXPIRES_IN`
-- `CORS_ORIGIN`
-
-No se almacenan credenciales en texto plano en el repositorio.
