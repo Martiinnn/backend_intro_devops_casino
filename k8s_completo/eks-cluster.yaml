@@ -1,0 +1,24 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: vidal-casino-cluster
+  region: us-east-1
+  version: "1.30"
+
+iam:
+  serviceRoleARN: "arn:aws:iam::618083578592:role/LabRole"
+
+vpc:
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+
+managedNodeGroups:
+  - name: standard-node-group
+    instanceType: t3.medium
+    minSize: 2
+    maxSize: 4
+    desiredCapacity: 2
+    iam:
+      instanceRoleARN: "arn:aws:iam::618083578592:role/LabRole"
